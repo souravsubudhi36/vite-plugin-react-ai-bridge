@@ -1,2 +1,3 @@
-# vite-plugin-react-ai-bridge
-Directly edit React components from browser using your favourite AI CLI(gemini , cursor , codex etc).
+**vite-plugin-react-ai-bridge**
+
+Custom Vite plugin that allows you to edit React components directly from your browser. Click an element, type a prompt, and update your code in real-time.
