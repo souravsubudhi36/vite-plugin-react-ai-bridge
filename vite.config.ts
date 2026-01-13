@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { exec, spawn } from 'node:child_process'
+import os from 'node:os'
+
 
 
 // https://vite.dev/config/
@@ -57,22 +59,21 @@ export default defineConfig({
           req.on("end", () => {
             try {
               const { prompt, file, line, elementType } = JSON.parse(body);
+              console.log('Platform: ', os.platform());
 
-              // for Windows we need the WSL path to avoid shell quoting issues
-              const normalizedFileForWslPath = file.replace(/\\/g, "/");
-              exec(`wsl wslpath -u "${normalizedFileForWslPath}"`, (pathError, wslPath) => {
-                if (pathError) {
-                  console.error(`\x1b[31m[Path Error]\x1b[0m ${pathError.message}`);
-                  res.statusCode = 500;
-                  return res.end(JSON.stringify({ status: "error", message: "Failed to convert path" }));
-                }
+              const isWin = os.platform() === "win32";
+              const safePrompt = prompt.replace(/'/g, "'\\''");
 
-                const unixPath = wslPath.trim();
-                const safePrompt = prompt.replace(/'/g, "'\\''");
+              const executeAgent = (targetPath: string) => {
+                const command = isWin ? "wsl" : "bash";
+                const agentCmd = `agent -p --force '${safePrompt} for ${elementType} @${targetPath} on line ${line}' --model auto`;
+                const commandArgs = isWin
+                  ? ["bash", "-lc", agentCmd]
+                  : ["-lc", agentCmd];
 
-                const commandArgs = ["bash", "-lc", `agent -p --force '${safePrompt} for ${elementType} @${unixPath} on line ${line}' --model auto`];
-                // to print the output of the command in same terminal
-                const child = spawn("wsl", commandArgs, { stdio: "inherit" });
+                console.log(`\x1b[36m[Executing]\x1b[0m ${command} ${commandArgs.join(" ")}`);
+
+                const child = spawn(command, commandArgs, { stdio: "inherit" });
 
                 child.on("close", (code) => {
                   if (code !== 0) {
@@ -90,6 +91,7 @@ export default defineConfig({
                     res.end(JSON.stringify({ status: "success" }));
                   }
                 });
+
                 child.on("error", (err) => {
                   console.error(`\x1b[31m[Spawn Error]\x1b[0m ${err.message}`);
                   if (!res.writableEnded) {
@@ -97,8 +99,26 @@ export default defineConfig({
                     res.end(JSON.stringify({ status: "error", message: err.message }));
                   }
                 });
+              };
 
-              });
+              if (isWin) {
+                // for Windows we need the WSL path to avoid shell quoting issues
+                const normalizedFileForWslPath = file.replace(/\\/g, "/");
+                exec(`wsl wslpath -u "${normalizedFileForWslPath}"`, (pathError, wslPath) => {
+                  if (pathError) {
+                    console.error(`\x1b[31m[Path Error]\x1b[0m ${pathError.message}`);
+                    if (!res.writableEnded) {
+                      res.statusCode = 500;
+                      res.end(JSON.stringify({ status: "error", message: "Failed to convert path" }));
+                    }
+                    return;
+                  }
+                  executeAgent(wslPath.trim());
+                });
+              } else {
+                executeAgent(file);
+              }
+
 
             } catch (e) {
               res.statusCode = 400;
