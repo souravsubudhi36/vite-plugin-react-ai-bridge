@@ -193,7 +193,7 @@ npm install -D @vitejs/plugin-react
 <summary><b>The AI CLI command isn't firing</b></summary>
 
 * Ensure you have WSL installed and configured.
-* Check if `agent` is in your Linux `$PATH`.
+* Check if `agent` is in your `$PATH` [Refer this](https://cursor.com/docs/cli/installation#post-installation-setup).
 </details>
 
 <details>
