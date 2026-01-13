@@ -59,7 +59,6 @@ export default defineConfig({
           req.on("end", () => {
             try {
               const { prompt, file, line, elementType } = JSON.parse(body);
-              console.log('Platform: ', os.platform());
 
               const isWin = os.platform() === "win32";
               const safePrompt = prompt.replace(/'/g, "'\\''");
