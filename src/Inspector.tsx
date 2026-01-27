@@ -197,7 +197,7 @@ const Inspector: React.FC = () => {
                     cursor: "grab",
                     touchAction: "none",
                 }}
-                whileActive={{ cursor: "grabbing" }}
+                whileDrag={{ cursor: "grabbing" }}
             >
                 <button
                     onClick={() => setIsActive(!isActive)}
