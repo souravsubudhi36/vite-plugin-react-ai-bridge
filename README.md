@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/3515731c-cbea-48d1-a894-5bd898143af3
 
 ## ✨ Why Custom Plugin?
 
-- Low Token Usage - You only pay for the context you want
+- Low Token Usage - You will only pay for the context you want
 - Less Hellucination - AI models often hallucinate when overwhelmed by a massive context window. 
 - Context Switching - You dont have to manually find the file and line number in your IDE to start and edit
 
